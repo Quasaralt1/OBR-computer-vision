@@ -1,1 +1,3 @@
-Primeiro teste de git para salvamento dos backups do robo com visao computacional para a Olimpiada Brasileira de Robótica de 2025
+Desenvolvimento pela equipe smarteens do sesi Araraquara um Robo utilizando Visao computacional e Machine Learning para a modalidade de robótica de resgate da Olimpiada Brasileira de Robótica(OBR)
+
+Integrantes = Murilo Mattia, Felipe Mattia , Jefferson , Logan
