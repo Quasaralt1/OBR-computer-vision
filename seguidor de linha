@@ -6,7 +6,7 @@ largura_da_tela = 1920 #tamanho da tela
 centro = largura_da_tela // 2 #referencia central para o calculo do erro
     # Faixa de cor para preto
 min_black = np.array([0, 0, 0])
-max_black = np.array([180, 255, 70])
+max_black = np.array([180, 255, 60])
 # lista com as cores BGR
 colors = [
     (0, 255, 0), # Verde
@@ -20,7 +20,7 @@ def centro_linha_preta(mask, y):
     M = cv2.moments(roi) #calcula literalmente os momentos da imagem, retornando valores em dicionario
     if M['m00'] > 0: # se o m00 for maior que 0 significa que há um pixel branco na tela, ou seja existe linha
         cm = int(M['m10'] / M['m00']) # calcula o centro de massa da linha, permitindo que a bolinha de deteccao fique sempre no centro da linha
-        return cm # retorna o centro
+        return cm # retorna o centro de massa
     return None # nao retorna nada caso nao haja linha
 
 # Função para desenhar bolinha de deteccao
@@ -62,7 +62,7 @@ while True:
     #mostra a maskara preta
     cv2.imshow("Mascara Preto", mask)
 
-    if cv2.waitKey(1) & 0xFF == 27:
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
 cap.release()
