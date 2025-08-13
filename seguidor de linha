@@ -1,0 +1,70 @@
+import cv2
+import numpy as np
+url = "http://10.215.220.157:8080/video"
+# Configuração das posições Y
+eixo_y = [950, 800, 650]  # inferior, meio, superior
+largura_da_tela = 1920 #tamanho da tela
+centro = largura_da_tela // 2 #referencia central para o calculo do erro
+    # Faixa de cor para preto
+min_black = np.array([0, 0, 0])
+max_black = np.array([180, 255, 50])
+# lista com as cores BGR
+colors = [
+    (0, 255, 0), # Verde
+    (0, 255, 255), # Amarelo
+    (0, 0, 255) # Vermelho
+]
+
+# Função para encontrar o centro da linha em um Y fixo
+def centro_linha_preta(mask, y):
+    roi = mask[y:y+5, :] # cria uma regiao de interesse(ROI, Region Of Interest) ao dar um "python slice na mascara de deteccao preta"
+    M = cv2.moments(roi) #calcula literalmente os momentos da imagem, retornando valores em dicionario
+    if M['m00'] > 0: # se o m00 for maior que 0 significa que há um pixel branco na tela, ou seja existe linha
+        cm = int(M['m10'] / M['m00']) # calcula o centro de massa da linha, permitindo que a bolinha de deteccao fique sempre no centro da linha
+        return cm # retorna o centro
+    return None # nao retorna nada caso nao haja linha
+
+# Função para desenhar bolinha de deteccao
+def draw_circle(frame, x, y, color, raio=15):
+    cv2.circle(frame, (x, y), raio, color, -1)
+
+cap = cv2.VideoCapture(url)# define qual video vai ocorrer a leitura do video
+
+while True:
+    ret, frame = cap.read() #separa o video em frames
+    if not ret: # se nao houver mais frames pare o loop
+        break #quebra o codigo se nao houver mais frames
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #converte do BGR para o HSV para uma melhor deteccao das cores
+
+    mask = cv2.inRange(hsv, min_black, max_black) #cria uma mascara que detecta de forma binaria o preto
+
+    # Linha central para referencia do erro do pid
+    cv2.line(frame, (centro, 0), (centro, frame.shape[0]), (0, 255, 0), 2)
+
+    #cria uma lista dos valores do centro x
+    eixo_x = []
+    for i, y in enumerate(eixo_y): #define um numero para cada valor na lista y no caso os valores do eixo y
+        cm = centro_linha_preta(mask, y) #define o centro de massa(cm) com base na funcao centro_linha_preta()
+        eixo_x.append(cm) #adiciona no final da lista o valor do eixo x
+        if cm is not None: #se o cm nao e nulo
+            draw_circle(frame, cm, y, colors[i], raio = 15 ) # desenha um circulo
+
+    # calculo do erro  do PID no círculo inferior
+    if eixo_x[0] is not None: # se o valor 0 da lista nao for nada
+        erro = eixo_x[0] - centro #calcula o erro do pid com base na distancia do centro de massa em relacao ao eixo x do centro
+        cv2.line(frame, (centro, eixo_y[0]), (eixo_x[0], eixo_y[0]), (255, 0, 0), 2) #cria uma linha que liga o centro ao centro de massa
+        meio_x = (centro + eixo_x[0]) // 2 # calcula o valor entre o centro e o center_X
+        cv2.putText(frame, f"{erro}", (meio_x, eixo_y[0] - 10), #cria um texto com o valor do erro, em cima da linha do erro ou seja eixo_y[0] -10
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+
+    #mostra o frame principal
+    cv2.imshow("Seguidor de Linha", frame)
+    #mostra a maskara preta
+    cv2.imshow("Mascara Preto", mask)
+
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
