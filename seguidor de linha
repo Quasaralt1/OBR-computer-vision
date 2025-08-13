@@ -6,7 +6,7 @@ largura_da_tela = 1920 #tamanho da tela
 centro = largura_da_tela // 2 #referencia central para o calculo do erro
     # Faixa de cor para preto
 min_black = np.array([0, 0, 0])
-max_black = np.array([180, 255, 50])
+max_black = np.array([180, 255, 70])
 # lista com as cores BGR
 colors = [
     (0, 255, 0), # Verde
@@ -27,7 +27,7 @@ def centro_linha_preta(mask, y):
 def draw_circle(frame, x, y, color, raio=15):
     cv2.circle(frame, (x, y), raio, color, -1)
 
-cap = cv2.VideoCapture(1)# define qual video vai ocorrer a leitura do video
+cap = cv2.VideoCapture(0)# define qual video vai ocorrer a leitura do video
 
 while True:
     ret, frame = cap.read() #separa o video em frames
